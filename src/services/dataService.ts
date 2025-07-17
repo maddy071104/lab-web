@@ -113,7 +113,7 @@ class DataService {
   }
 
   authenticateUser(email: string, password: string): User | null {
-    const expectedPassword = email === 'admin@issacasimov.in' ? 'ralab' : 'issacasimov';
+    const expectedPassword = email === 'admin@issacasimov.in' ? 'isaacasimov' : 'ralab';
     
     if (password !== expectedPassword) {
       return null;
@@ -228,6 +228,12 @@ class DataService {
   addComponent(component: Component): void {
     const data = this.getData();
     data.components.push(component);
+    this.saveData(data);
+  }
+
+  deleteComponent(componentId: string): void {
+    const data = this.getData();
+    data.components = data.components.filter(c => c.id !== componentId);
     this.saveData(data);
   }
 

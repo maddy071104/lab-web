@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit, Package, Search } from 'lucide-react';
+import { Plus, Edit, Package, Search, Trash2 } from 'lucide-react';
 import { dataService } from '../../services/dataService';
 import { Component } from '../../types';
 
@@ -9,6 +9,7 @@ const InventoryManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingComponent, setEditingComponent] = useState<Component | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     totalQuantity: 0,
@@ -62,6 +63,22 @@ const InventoryManagement: React.FC = () => {
       description: component.description || '',
     });
     setShowAddForm(true);
+  };
+
+  const handleDelete = (componentId: string) => {
+    setShowDeleteConfirm(componentId);
+  };
+
+  const confirmDelete = () => {
+    if (showDeleteConfirm) {
+      dataService.deleteComponent(showDeleteConfirm);
+      setShowDeleteConfirm(null);
+      loadComponents();
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(null);
   };
 
   const resetForm = () => {
@@ -200,6 +217,51 @@ const InventoryManagement: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+            onClick={(e) => e.target === e.currentTarget && cancelDelete()}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-dark-800 rounded-2xl border border-red-500/20 p-6 w-full max-w-md"
+            >
+              <div className="text-center">
+                <div className="mx-auto flex items-center justify-center w-12 h-12 bg-red-500/20 rounded-full mb-4">
+                  <Trash2 className="w-6 h-6 text-red-400" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Delete Component</h3>
+                <p className="text-peacock-300 mb-6">
+                  Are you sure you want to delete this component? This action cannot be undone.
+                </p>
+                
+                <div className="flex gap-3">
+                  <button
+                    onClick={cancelDelete}
+                    className="flex-1 px-4 py-3 bg-dark-700 text-white rounded-lg font-medium hover:bg-dark-600 transition-all duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg font-medium hover:from-red-600 hover:to-red-700 transition-all duration-200"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Components Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredComponents.map((component, index) => {
@@ -231,6 +293,16 @@ const InventoryManagement: React.FC = () => {
                   className="p-2 text-peacock-400 hover:text-peacock-300 hover:bg-dark-700/50 rounded-lg transition-all duration-200"
                 >
                   <Edit className="w-4 h-4" />
+                </motion.button>
+                
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleDelete(component.id)}
+                  className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all duration-200"
+                  title="Delete Component"
+                >
+                  <Trash2 className="w-4 h-4" />
                 </motion.button>
               </div>
 
